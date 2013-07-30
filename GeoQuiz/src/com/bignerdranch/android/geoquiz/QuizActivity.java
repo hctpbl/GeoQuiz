@@ -1,6 +1,7 @@
 package com.bignerdranch.android.geoquiz;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -17,9 +18,11 @@ public class QuizActivity extends Activity {
 
 	private Button mTrueButton;
 	private Button mFalseButton;
+	private Button mCheatButton;
     private ImageButton mPrevButton;
     private ImageButton mNextButton;
     private TextView mQuestionTextView;
+    private boolean mIsCheater;
     
     private TrueFalse[] mQuestionBank = new TrueFalse[] {
     		new TrueFalse(R.string.question_oceans, true),
@@ -41,10 +44,14 @@ public class QuizActivity extends Activity {
     	
     	int messageResId = 0;
     	
-    	if (userPressedTrue == answerIsTrue) {
-    		messageResId = R.string.correct_toast;
+    	if (mIsCheater) {
+    		messageResId = R.string.judgment_toast;
     	} else {
-    		messageResId = R.string.incorrect_toast;
+	    	if (userPressedTrue == answerIsTrue) {
+	    		messageResId = R.string.correct_toast;
+	    	} else {
+	    		messageResId = R.string.incorrect_toast;
+	    	}
     	}
     	
     	Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show();
@@ -60,6 +67,7 @@ public class QuizActivity extends Activity {
         
         mTrueButton = (Button)findViewById(R.id.true_button);
         mFalseButton = (Button)findViewById(R.id.false_button);
+        mCheatButton = (Button)findViewById(R.id.cheat_button);
         mPrevButton = (ImageButton)findViewById(R.id.prev_button);
         mNextButton = (ImageButton)findViewById(R.id.next_button);
         
@@ -86,6 +94,19 @@ public class QuizActivity extends Activity {
 					mCurrentIndex = (mCurrentIndex - 1) % mQuestionBank.length;
 				}
 				updateQuestion();
+			}
+		});
+        
+        mCheatButton.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				Intent i = new Intent(QuizActivity.this, CheatActivity.class);
+				
+				boolean answerIsTrue = mQuestionBank[mCurrentIndex].isTrueQuestion();
+				
+				i.putExtra(CheatActivity.EXTRA_ANSWER_IS_TRUE, answerIsTrue);
+				startActivityForResult(i, 0);
 			}
 		});
         
@@ -147,6 +168,14 @@ public class QuizActivity extends Activity {
     public void onDestroy() {
     	super.onDestroy();
     	Log.d(TAG, "onDestroy() called");
+    }
+    
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    	if (data == null) {
+    		return;
+    	}
+    	mIsCheater = data.getBooleanExtra(CheatActivity.EXTRA_ANSWER_SHOWN, false);
     }
 
     @Override
