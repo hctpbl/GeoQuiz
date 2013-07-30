@@ -15,6 +15,7 @@ public class QuizActivity extends Activity {
 	
 	private static final String TAG = "QuizActivity";
 	private static final String KEY_INDEX = "index";
+	private static final String KEY_CHEATER = "cheater";
 
 	private Button mTrueButton;
 	private Button mFalseButton;
@@ -22,7 +23,6 @@ public class QuizActivity extends Activity {
     private ImageButton mPrevButton;
     private ImageButton mNextButton;
     private TextView mQuestionTextView;
-    private boolean mIsCheater;
     
     private TrueFalse[] mQuestionBank = new TrueFalse[] {
     		new TrueFalse(R.string.question_oceans, true),
@@ -31,6 +31,8 @@ public class QuizActivity extends Activity {
     		new TrueFalse(R.string.question_americas, true),
     		new TrueFalse(R.string.question_asia, true),
     };
+
+    private boolean[] mIsCheater = new boolean[mQuestionBank.length];
     
     private int mCurrentIndex = 0;
     
@@ -44,7 +46,7 @@ public class QuizActivity extends Activity {
     	
     	int messageResId = 0;
     	
-    	if (mIsCheater) {
+    	if (mIsCheater[mCurrentIndex]) {
     		messageResId = R.string.judgment_toast;
     	} else {
 	    	if (userPressedTrue == answerIsTrue) {
@@ -128,6 +130,7 @@ public class QuizActivity extends Activity {
         
         if (savedInstanceState != null) {
         	mCurrentIndex = savedInstanceState.getInt(KEY_INDEX, 0);
+        	mIsCheater = savedInstanceState.getBooleanArray(KEY_CHEATER);
         }
         
         updateQuestion();
@@ -138,6 +141,7 @@ public class QuizActivity extends Activity {
     	super.onSaveInstanceState(savedInstanceState);
     	Log.i(TAG, "onSavedInstanceState");
     	savedInstanceState.putInt(KEY_INDEX, mCurrentIndex);
+    	savedInstanceState.putBooleanArray(KEY_CHEATER, mIsCheater);
     }
     
     @Override
@@ -175,7 +179,7 @@ public class QuizActivity extends Activity {
     	if (data == null) {
     		return;
     	}
-    	mIsCheater = data.getBooleanExtra(CheatActivity.EXTRA_ANSWER_SHOWN, false);
+    	mIsCheater[mCurrentIndex] = data.getBooleanExtra(CheatActivity.EXTRA_ANSWER_SHOWN, false);
     }
 
     @Override
